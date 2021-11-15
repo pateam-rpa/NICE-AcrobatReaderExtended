@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System;
+using log4net;
 
 namespace Direct.PDFExtended.Library
 {
@@ -17,7 +18,7 @@ namespace Direct.PDFExtended.Library
     [ParameterType(false)]
     public static class PDFFunctions
     {
-        private static readonly IDirectLog _log = DirectLogManager.GetLogger("LibraryObjects");
+        private static readonly ILog _log = LogManager.GetLogger("LibraryObjects");
         private static readonly int nMagorFileVersion = (int)char.GetNumericValue(FileVersionInfo.GetVersionInfo("itextsharp.dll").FileVersion[0]);
 
         [DirectDom("Extract PDF Pages")]
@@ -46,6 +47,7 @@ namespace Direct.PDFExtended.Library
                 for (int i = startpage; i <= endpage; i++)
                 {
                     importedPage = pdfCopyProvider.GetImportedPage(reader, i);
+                    importedPage.ResetRGBColorFill();
                     pdfCopyProvider.AddPage(importedPage);
                 }
                 sourceDocument.Close();
