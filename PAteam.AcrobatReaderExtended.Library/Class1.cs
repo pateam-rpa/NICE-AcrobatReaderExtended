@@ -1,13 +1,10 @@
-﻿using Direct.Interface;
-using Direct.Shared;
+﻿using Direct.Shared;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System;
 using log4net;
 
@@ -19,7 +16,7 @@ namespace Direct.PDFExtended.Library
     public static class PDFFunctions
     {
         private static readonly ILog _log = LogManager.GetLogger("LibraryObjects");
-        private static readonly int nMagorFileVersion = (int)char.GetNumericValue(FileVersionInfo.GetVersionInfo("itextsharp.dll").FileVersion[0]);
+        private static readonly int nMajorFileVersion = (int)char.GetNumericValue(FileVersionInfo.GetVersionInfo("itextsharp.dll").FileVersion[0]);
 
         [DirectDom("Extract PDF Pages")]
         [DirectDomMethod("Extract PDF Pages from {starting page} to {end page} out of {Input File Full Path} into seperate PDF {Output File Full Path}")]
@@ -82,14 +79,14 @@ namespace Direct.PDFExtended.Library
                 string name = file.Name.Substring(0, file.Name.LastIndexOf("."));
 
                 PdfReader reader = new PdfReader(sourcePDFpath);
-                
+
                 for (int pagenumber = 1; pagenumber <= reader.NumberOfPages; pagenumber++)
                 {
                     string filename = name + "(" + pagenumber.ToString() + ").pdf";
                     string outputPDFpath = outputDirectory + filename;
                     bool result = ExtractPages(pagenumber, pagenumber, sourcePDFpath, outputPDFpath);
                 }
-            
+
                 if (_log.IsDebugEnabled)
                 {
                     _log.Debug("Direct.PDFExtended.Library - Completed splitting pdf");
@@ -139,45 +136,6 @@ namespace Direct.PDFExtended.Library
             }
         }
 
-        [DirectDom("Merges List of files")]
-        [DirectDomMethod("Merges {list of pdf files} into {pdf file}")]
-        [MethodDescription("Adds blank pages after every page.")]
-        public static bool Merge(DirectCollection<String> InFiles, String OutFile)
-        {
-            try
-            {
-                FileStream stream = new FileStream(OutFile, FileMode.Create);
-                Document doc = new Document();
-                PdfCopy pdf = new PdfCopy(doc, stream);
-            
-                doc.Open();
-
-                PdfReader reader = null;
-                PdfImportedPage page = null;
-
-                foreach (var file in InFiles)
-                {
-                    reader = new PdfReader(file);
-
-                    for (int i = 0; i < reader.NumberOfPages; i++)
-                    {
-                        page = pdf.GetImportedPage(reader, i + 1);
-                        pdf.AddPage(page);
-                    }
-
-                    pdf.FreeReader(reader);
-                    reader.Close();
-                };
-                doc.Close();
-                return true;
-            } 
-            catch (Exception e)
-            {
-                _log.Error("Direct.PDFExtended.Library - Insert blank pages Exception", e);
-                return false;
-            }
-        }
-
         [DirectDom("Insert blank pages from to")]
         [DirectDomMethod("Adds a blank page after every page of {Input File Full Path} and save to {Output File Full Path} Starting at {start page} ending at {end page}")]
         [MethodDescription("Adds blank pages after every page.")]
@@ -212,6 +170,148 @@ namespace Direct.PDFExtended.Library
                 _log.Error("Direct.PDFExtended.Library - Insert blank pages from/to Exception", e);
                 return false;
             }
+        }
+
+        [DirectDom("Merge PDF Files")]
+        [DirectDomMethod("Merge PDF Files {Input Files Full Paths} into one PDF {Output File Full Path} and Add Page Numbering {Add Page Numbering}")]
+        [MethodDescription("Merges specified PDF files into one PDF file adding page numbering if needed")]
+        public static bool MergePdfFiles(DirectCollection<string> inputFilePaths, string outputFilePath, bool enablePageNumbers)
+        {
+            bool returnFlag = false;
+            if (_log.IsInfoEnabled)
+            {
+                _log.InfoFormat("Direct.PDFExtended.Library - MergePDFFiles - Output file path [{0}], Enable Page Numbers [{1}]", outputFilePath, enablePageNumbers);
+            }
+
+            if (!ValidateInput(string.Empty, outputFilePath, nameof(MergePdfFiles), false))
+            {
+                return returnFlag;
+            }
+
+            foreach (string inputFilePath in inputFilePaths)
+            {
+                if (_log.IsInfoEnabled)
+                {
+                    _log.InfoFormat("Direct.PDFExtended.Library - MergePDFFiles - Input file path [{0}]", inputFilePath);
+                }
+
+                if (!ValidateInput(string.Empty, inputFilePath, nameof(MergePdfFiles), true))
+                {
+                    return returnFlag;
+                }
+            }
+
+            int fieldNameExtender = 0;
+            PdfSmartCopy pdfSmartCopy = null;
+            Document document = null;
+            List<PdfReader> pdfReaderList = new List<PdfReader>();
+
+            try
+            {
+                foreach (string inputFilePath in inputFilePaths)
+                {
+                    PdfReader pdfReader = new PdfReader(RenameFields(inputFilePath, ++fieldNameExtender));
+                    pdfReaderList.Add(pdfReader);
+                }
+
+                int num = 1;
+
+                document = new Document(PageSize.A4, 0.0f, 0.0f, 0.0f, 0.0f);
+                pdfSmartCopy = new PdfSmartCopy(document, new FileStream(outputFilePath, FileMode.Create, FileAccess.ReadWrite));
+                pdfSmartCopy.SetFullCompression();
+                pdfSmartCopy.CompressionLevel = PdfStream.BEST_COMPRESSION;
+                document.Open();
+                foreach (PdfReader reader in pdfReaderList)
+                {
+                    for (int pageNumber = 1; pageNumber <= reader.NumberOfPages; ++pageNumber)
+                    {
+                        PdfImportedPage importedPage = pdfSmartCopy.GetImportedPage(reader, pageNumber);
+                        if (enablePageNumbers)
+                        {
+                            PdfCopy.PageStamp pageStamp = pdfSmartCopy.CreatePageStamp(importedPage);
+                            PdfContentByte overContent = pageStamp.GetOverContent();
+                            Rectangle rectangle = new Rectangle(520f, 6f, 570f, 18f);
+                            rectangle.BackgroundColor = Color.WHITE;
+                            overContent.Rectangle(rectangle);
+                            ColumnText.ShowTextAligned(
+                                overContent, 
+                                2, 
+                                new Phrase(
+                                    new Chunk(string.Format("{0}", num++), 
+                                    FontFactory.GetFont("Helvetica", 7f, 0, Color.BLACK))
+                                ), 
+                                570f, 10f, 0.0f);
+                            pageStamp.AlterContents();
+                        }
+                        pdfSmartCopy.AddPage(importedPage);
+                    }
+                    if (reader.AcroForm != null)
+                    {
+                        pdfSmartCopy.CopyAcroForm(reader);
+                    }
+                    pdfSmartCopy.FreeReader(reader);
+                }
+                returnFlag = true;
+            }
+            catch (Exception e)
+            {
+                _log.ErrorFormat("Direct.PDFExtended.Library - MergePDFFiles - Exception:)" + e.Message);
+            }
+            finally
+            {
+                document?.Close();
+                pdfSmartCopy?.Close();
+                if (pdfReaderList != null)
+                {
+                    foreach (PdfReader pdfReader in pdfReaderList)
+                        pdfReader.Close();
+                }
+            }
+            return returnFlag;
+        }
+
+        private static bool ValidateInput(
+            string path,
+            string fileName,
+            string methodName,
+            bool bCheckExistence = true)
+        {
+            if (!string.IsNullOrEmpty(fileName) &&
+                fileName.Length >= 5 &&
+                fileName.ToUpper().EndsWith(".PDF") &&
+                (!bCheckExistence || File.Exists(path != null ? Path.Combine(path, fileName) : fileName)))
+            {
+                return true;
+            }
+
+            if (_log.IsErrorEnabled)
+            {
+                _log.ErrorFormat("Direct.PDFExtended.Library - ValidateInput.{0} - Path [{1}] is not valid, please enter valid pdf path", methodName, fileName);
+            }
+
+            return false;
+        }
+
+        public static byte[] RenameFields(string inputFilePath, int fieldNameExtender)
+        {
+            MemoryStream os = null;
+            PdfReader reader = null;
+            PdfStamper pdfStamper = null;
+            try
+            {
+                os = new MemoryStream();
+                reader = new PdfReader(inputFilePath);
+                pdfStamper = new PdfStamper(reader, os);
+                AcroFields acroFields = pdfStamper.AcroFields;
+                foreach (string key in (IEnumerable)reader.AcroFields.Fields.Keys)
+                    acroFields.RenameField(key, string.Format("{0}{1}", key, fieldNameExtender));
+            }
+            finally
+            {
+                pdfStamper.Close();
+                reader.Close();
+            }
+            return os.ToArray();
         }
     }
 }
