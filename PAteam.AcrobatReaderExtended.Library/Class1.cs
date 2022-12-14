@@ -270,6 +270,71 @@ namespace Direct.PDFExtended.Library
             return returnFlag;
         }
 
+        [DirectDom("Set PDF Form Field Value")]
+        [DirectDomMethod("Set PDF {Path} {File Name} Form Field {Field} Value {Value}")]
+        [MethodDescription("Sets a value to a specified field of PDF form")]
+        public static bool SetPDFFormFieldValue(
+            string path,
+            string fileName,
+            string field,
+            string value)
+        {
+            bool flag = false;
+            if (string.IsNullOrEmpty(field))
+            {
+                if (_log.IsErrorEnabled)
+                    _log.ErrorFormat("SetPDFFormFieldValue - field is empty");
+                return flag;
+            }
+            if (!ValidateInput(path, fileName, nameof(SetPDFFormFieldValue)))
+                return flag;
+            PdfReader reader = null;
+            PdfStamper pdfStamper = null;
+            AcroFields.Item userFormField = null;
+            string str1 = Path.Combine(path, fileName);
+            string str2 = Path.Combine(path, "tmp_" + fileName);
+            try
+            {
+
+                reader = new PdfReader(str1);
+                FileStream os = new FileStream(str2, FileMode.Create, FileAccess.ReadWrite);
+                pdfStamper = new PdfStamper(reader, os);
+                AcroFields acroFields = pdfStamper.AcroFields;
+                if (acroFields.Fields.Count == 0)
+                {
+                    _log.ErrorFormat("SetPDFFormFieldValue - No fields in PDF File");
+                }
+                else
+                {
+                    acroFields.GenerateAppearances = true;
+                    userFormField = acroFields.GetFieldItem(field);
+                }
+                if (userFormField == null)
+                {
+                    _log.ErrorFormat("SetPDFFormFieldValue - Unable to Find Field with Name " + field);
+                    return flag;
+                }
+
+                flag = acroFields.SetField(field, value);
+                pdfStamper.FormFlattening = false;
+
+            }
+            catch (Exception ex)
+            {
+                _log.ErrorFormat("SetPDFFormFieldValue - Exception:)" + ex.ToString());
+            }
+            finally
+            {
+                reader?.Close();
+                pdfStamper?.Close();
+                File.Copy(str2, str1, true);
+                File.Delete(str2);
+            }
+            if (_log.IsInfoEnabled)
+                _log.InfoFormat("SetPDFFormFieldValue - Path [{0}], File [{1}], Field [{2}], Value [{3}]", path, fileName, field, value);
+            return flag;
+        }
+
         private static bool ValidateInput(
             string path,
             string fileName,
