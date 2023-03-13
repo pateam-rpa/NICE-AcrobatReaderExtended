@@ -34,3 +34,13 @@ C:\Users\Mateusz\OneDrive - PA Team Software Consulting Ltd\Repos\NICE-AcrobatRe
 C:\Users\Mateusz\OneDrive - PA Team Software Consulting Ltd\Repos\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\obj\Debug\PAteam.AcrobatReaderExtended.Library.csproj.CopyComplete
 C:\Users\Mateusz\OneDrive - PA Team Software Consulting Ltd\Repos\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\obj\Debug\PAteam.AcrobatReaderExtended.Library.dll
 C:\Users\Mateusz\OneDrive - PA Team Software Consulting Ltd\Repos\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\obj\Debug\PAteam.AcrobatReaderExtended.Library.pdb
+C:\Users\Ronen\Source\Repos\ronenPATeam\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\obj\Debug\PAteam.AcrobatReaderExtended.Library.dll
+C:\Users\Ronen\Source\Repos\ronenPATeam\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\obj\Debug\PAteam.AcrobatReaderExtended.Library.pdb
+C:\Users\Ronen\Source\Repos\ronenPATeam\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\obj\Debug\PAteam.AcrobatReaderExtended.Library.csproj.AssemblyReference.cache
+C:\Users\Ronen\Source\Repos\ronenPATeam\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\obj\Debug\PAteam.AcrobatReaderExtended.Library.csproj.CoreCompileInputs.cache
+C:\Users\Ronen\Source\Repos\ronenPATeam\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\bin\Debug\PAteam.AcrobatReaderExtended.Library.dll
+C:\Users\Ronen\Source\Repos\ronenPATeam\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\bin\Debug\PAteam.AcrobatReaderExtended.Library.pdb
+C:\Users\Ronen\Source\Repos\ronenPATeam\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Ronen\Source\Repos\ronenPATeam\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\obj\Debug\PAteam.AcrobatReaderExtended.Library.csproj.CopyComplete
+C:\Users\Ronen\Source\Repos\ronenPATeam\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\bin\Debug\log4net.dll
+C:\Users\Ronen\Source\Repos\ronenPATeam\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\bin\Debug\log4net.xml
