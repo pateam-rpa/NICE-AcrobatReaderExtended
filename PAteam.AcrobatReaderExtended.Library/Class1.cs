@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.IO;
 using System;
 using log4net;
-using System.Runtime.Remoting.Messaging;
 
 namespace Direct.PDFExtended.Library
 {
@@ -339,41 +338,37 @@ namespace Direct.PDFExtended.Library
         [DirectDom("Check PDF File for Password Protection")]
         [DirectDomMethod("Check {Input File Full Path} for password protection")]
         [MethodDescription("Checks if the file in the filepath is password protected or not.")]
-        public static bool IsPdfPasswordProtected(string pdfFilePath)
+        public static bool IsPdfPasswordProtected(string path,string fileName)
         {
             bool isPasswordProtected = false;
+            string fullFilePath = Path.Combine(path, fileName);
             PdfReader reader = null;
             try
             {                
                 if (_log.IsDebugEnabled)
                 {
-                    _log.Debug("Direct.PDFExtended.Library - Checking pdf file: " + pdfFilePath + " for password protection");
+                    _log.Debug("Direct.PDFExtended.Library - Checking pdf file: " + fullFilePath + " for password protection");
                 }
-                if (pdfFilePath != null)
+                if (ValidateInput(path, fileName, string.Empty))
                 {
-                    if(pdfFilePath.EndsWith(".pdf"))
+                    _log.Debug("Direct.PDFExtended.Library - File is Valid");
+                    reader = new PdfReader(fullFilePath);
+                    if (reader.IsEncrypted())
                     {
-                        reader = new PdfReader(pdfFilePath);
-                        if (reader.IsEncrypted())
-                        {
-                                isPasswordProtected = true;
-                        } 
+                        _log.Debug("Direct.PDFExtended.Library - Set Result to true");
+                        isPasswordProtected = true;
                     }
                     else
                     {
-                        throw new Exception("File type is not PDF.");
+                        _log.Debug("Direct.PDFExtended.Library - Set Result to false");
                     }
-                }
-                else
-                {
-                    throw new Exception("Invalid file path.");
                 }
             }
             catch (BadPasswordException ex)
             {
                 if (_log.IsDebugEnabled)
                 {
-                    _log.Debug("Direct.PDFExtended.Library - PDF is password-protected, but user password is incorrect");
+                    _log.Debug("Direct.PDFExtended.Library - PDF is password-protected");
                 }
                 isPasswordProtected = true;
             }
