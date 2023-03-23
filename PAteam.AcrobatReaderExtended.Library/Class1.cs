@@ -364,7 +364,7 @@ namespace Direct.PDFExtended.Library
                     }
                 }
             }
-            catch (BadPasswordException ex)
+            catch (BadPasswordException)
             {
                 if (_log.IsDebugEnabled)
                 {
@@ -388,6 +388,95 @@ namespace Direct.PDFExtended.Library
                 _log.Debug("Direct.PDFExtended.Library - Completed Checking PDF File");
             }
             return isPasswordProtected;
+        }
+
+        [DirectDom("Set Image into PDF Form Field Value")]
+        [DirectDomMethod("Set Image into PDF Path: {Path}  File Name: {File Name} Form Field {Field} Image File Path: {Image Path}  Image File Name: {Image File Name}")]
+        [MethodDescription("Sets an image to a specified field of PDF form")]
+        public static bool SetImageIntoPDFFormFieldValue(string path, string fileName, string fieldName, string imgFilePath, string imgFileName)
+        {
+            bool flag = false;
+            PdfReader reader = null;
+            PdfStamper stamper = null;
+            string fullFilePath = Path.Combine(path, fileName);
+            string fullImageFilePath = Path.Combine(imgFilePath, imgFileName);
+            try
+            {
+                if (_log.IsDebugEnabled)
+                {
+                    _log.Debug("Direct.PDFExtended.Library - Setting Image: " + fullImageFilePath + " to PDF: " + fullFilePath + " With form Field: " + fieldName + ".");
+                }
+                if (ValidateInput(path, fileName, string.Empty))
+                {
+                    _log.Debug("Direct.PDFExtended.Library - File is Valid");
+                    if (ValidateImageInput(imgFilePath, imgFileName))
+                    {
+                        _log.Debug("Direct.PDFExtended.Library - Image File is Valid");
+                        reader = new PdfReader(fullFilePath);
+                        stamper = new PdfStamper(reader, new FileStream(fullFilePath + "_temp", FileMode.Create));
+                        AcroFields formFields = stamper.AcroFields;  
+                        Image image = Image.GetInstance(fullImageFilePath);
+                        //image.SetAbsolutePosition(formFields.GetFieldPositions(fieldName)[0], formFields.GetFieldPositions(fieldName)[1]);
+                        //image.ScaleToFit(formFields.GetFieldPositions(fieldName)[2], formFields.GetFieldPositions(fieldName)[3]);
+                        _log.Debug("Direct.PDFExtended.Library " + formFields.GetFieldPositions(fieldName)[0] + "," + formFields.GetFieldPositions(fieldName)[1] + "," + formFields.GetFieldPositions(fieldName)[2] + "," + formFields.GetFieldPositions(fieldName)[3]);
+                        Rectangle rect = reader.GetPageSizeWithRotation(1);
+                        _log.Debug("Direct.PDFExtended.Library " + rect.Width + "," + rect.Height);
+                        _log.Debug("Direct.PDFExtended.Library " +image.ScaledWidth + "," + image.ScaledHeight);
+                        if (image.Width > (formFields.GetFieldPositions(fieldName)[2] - formFields.GetFieldPositions(fieldName)[0]) || image.Height > (formFields.GetFieldPositions(fieldName)[3] - formFields.GetFieldPositions(fieldName)[1]))
+                        {
+                            image.ScaleToFit(formFields.GetFieldPositions(fieldName)[2]-formFields.GetFieldPositions(fieldName)[0], formFields.GetFieldPositions(fieldName)[3] - formFields.GetFieldPositions(fieldName)[1]);
+                            image.SetAbsolutePosition(formFields.GetFieldPositions(fieldName)[0], formFields.GetFieldPositions(fieldName)[1]);
+                        }
+                        else
+                        {
+                            image.SetAbsolutePosition(formFields.GetFieldPositions(fieldName)[0], formFields.GetFieldPositions(fieldName)[1]);
+                        }
+                        PdfContentByte canvas = stamper.GetOverContent(1);
+                        canvas.AddImage(image);
+                        flag = true;
+                    }
+
+                }
+            }
+            catch (Exception e)
+            {
+                _log.Error("Direct.PDFExtended.Library - Setting Image in PDF Form Field Exception", e);
+            }
+            finally
+            {
+                stamper.Close();
+                reader.Close();
+                File.Delete(fullFilePath);
+                File.Move(fullFilePath + "_temp", fullFilePath);                
+            }
+
+            return flag;
+
+        }
+
+        private static bool ValidateImageInput(
+             string imageFilePath,
+             string imageFileName
+             )
+        {
+            _log.Debug("Direct.PDFExtended.Library - ValidateImageInput Parameters: "+ imageFilePath +", "+ imageFileName);
+            string fullFilePath = Path.Combine(imageFilePath, imageFileName);
+            if (!string.IsNullOrEmpty(imageFileName) &&
+                 imageFileName.Length >= 5 &&
+                (imageFileName.ToUpper().EndsWith(".JPG") || imageFileName.ToUpper().EndsWith(".JPEG") ||
+                 imageFileName.ToUpper().EndsWith(".PNG") || imageFileName.ToUpper().EndsWith(".GIF")) &&
+                (File.Exists(imageFilePath != null ? Path.Combine(imageFilePath, imageFileName) : imageFileName)))
+            {
+
+                return true;
+            }
+
+            if (_log.IsErrorEnabled)
+            {
+                _log.ErrorFormat("Direct.PDFExtended.Library - ValidateImageInput - Path {1} is not valid, please enter valid pdf path", fullFilePath);
+            }
+
+            return false;
         }
 
         private static bool ValidateInput(
