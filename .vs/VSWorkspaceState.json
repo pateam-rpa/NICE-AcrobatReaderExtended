@@ -2,7 +2,8 @@
   "ExpandedNodes": [
     "",
     "\\PAteam.AcrobatReaderExtended.Library",
-    "\\PAteam.AcrobatReaderExtended.Library\\Properties"
+    "\\PAteam.AcrobatReaderExtended.Library\\bin",
+    "\\PAteam.AcrobatReaderExtended.Library\\bin\\Debug"
   ],
   "SelectedNode": "\\PAteam.AcrobatReaderExtended.Library\\Class1.cs",
   "PreviewInSolutionExplorer": false
