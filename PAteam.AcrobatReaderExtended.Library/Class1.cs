@@ -506,6 +506,23 @@ namespace Direct.PDFExtended.Library
         [MethodDescription("Test")]
         public static bool Test(string filePath, FieldSize fieldSize, FieldPosition fieldPosition, FieldOptions fieldOptions)
         {
+            // todo
+            // refactor to open like here: https://gist.github.com/adamzuckerman/77290668705122b7aff6
+
+
+            if (string.IsNullOrEmpty(filePath))
+            {
+                _log.Debug("Path to file where to add field is empty");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(fieldOptions.FieldName))
+            {
+                _log.Debug("Field Name is empty");
+                return false;
+            }
+
+
             if (fieldSize.Width == 0 || fieldSize.Height == 0)
             {
                 _log.Debug("Width and Height have to be bigger then 0");
@@ -523,27 +540,25 @@ namespace Direct.PDFExtended.Library
             stamper = new PdfStamper(reader, new FileStream(newFilePath, FileMode.Create));
 
             // (lower-left-x, lower-left-y, upper-right-x (llx + width), upper-right-y (lly + height), rotation angle 
-            TextField field = new TextField(stamper.Writer, new Rectangle(10, 9, 110, 209), fieldOptions.FieldName);
+            TextField field = new TextField(
+                stamper.Writer, 
+                new Rectangle(fieldPosition.X, fieldPosition.Y, fieldPosition.X + fieldSize.Width, fieldPosition.Y + fieldSize.Height), 
+                fieldOptions.FieldName
+            );
 
             if (fieldOptions.TextAlignment.ToLower() == "right")
             {
                 field.Alignment = Element.ALIGN_RIGHT;
             }
 
-
-            //if (!FontFactory.IsRegistered("Arial"))
-            //{
-            //    var fontPath = Path.Combine(Environment.GetEnvironmentVariable("SystemRoot"), "fonts", "Arial", "arial.ttf");
-            //    FontFactory.Register(fontPath);
-            //}
-
-            //Font font = FontFactory.GetFont("Arial", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
-
-            //bigger size
-            //field.Font = BaseFont.CreateFont(Path.Combine(Environment.GetEnvironmentVariable("SystemRoot"), "fonts", "ARIAL.TTF"), BaseFont.CP1252, BaseFont.EMBEDDED);
-
-            //lower size
-            field.Font = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.EMBEDDED);
+            if (!string.IsNullOrEmpty(fieldOptions.CustomFont))
+            {
+                field.Font = BaseFont.CreateFont(fieldOptions.CustomFont, BaseFont.CP1252, BaseFont.EMBEDDED);
+            }
+            else
+            {
+                field.Font = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+            }
 
             field.FontSize = fieldOptions.FontSize;
 
@@ -551,17 +566,17 @@ namespace Direct.PDFExtended.Library
 
             if (fieldOptions.IsMultiline)
             {
-                options += TextField.MULTILINE;
+                options += BaseField.MULTILINE;
             }
 
             if (fieldOptions.IsReadOnly)
             {
-                options += TextField.READ_ONLY;
+                options += BaseField.READ_ONLY;
             }
 
             if (fieldOptions.IsRequired)
             {
-                options += TextField.REQUIRED;
+                options += BaseField.REQUIRED;
             }
 
             field.Options = options;
@@ -723,6 +738,7 @@ namespace Direct.PDFExtended.Library
         protected PropertyHolder<bool> _IsReadonly = new PropertyHolder<bool>("Is Read Only");
         protected PropertyHolder<string> _TextAlignment = new PropertyHolder<string>("Text Alignment");
         protected PropertyHolder<string> _FieldName = new PropertyHolder<string>("Field Name");
+        protected PropertyHolder<string> _CustomFont = new PropertyHolder<string>("Custom Font Path");
         protected PropertyHolder<bool> _ShouldScroll = new PropertyHolder<bool>("Should Scroll Long Text");
         protected PropertyHolder<int> _FontSize = new PropertyHolder<int>("Font Size");
 
@@ -762,6 +778,13 @@ namespace Direct.PDFExtended.Library
             set { _FieldName.TypedValue = value; }
         }
 
+        [DirectDom("Custom Font Path")]
+        public string CustomFont
+        {
+            get { return _CustomFont.TypedValue; }
+            set { _CustomFont.TypedValue = value; }
+        }
+
         [DirectDom("Should Scroll Long Text")]
         public bool ShouldScroll
         {
@@ -786,6 +809,7 @@ namespace Direct.PDFExtended.Library
         {
             ShouldScroll = true;
             FontSize = 10;
+            TextAlignment = "left";
         }
 
     }
