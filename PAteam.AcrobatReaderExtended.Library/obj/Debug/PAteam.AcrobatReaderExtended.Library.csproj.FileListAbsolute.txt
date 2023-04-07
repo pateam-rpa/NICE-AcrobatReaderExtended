@@ -19,7 +19,6 @@ C:\Users\Mateusz\Source\Repos\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExt
 C:\Users\Mateusz\Source\Repos\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\bin\Debug\Direct.Shared.dll
 C:\Users\Mateusz\Source\Repos\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\bin\Debug\itextsharp.dll
 C:\Users\Mateusz\Source\Repos\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\bin\Debug\log4net.dll
-C:\Users\Mateusz\Source\Repos\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\bin\Debug\Microsoft.mshtml.dll
 C:\Users\Mateusz\Source\Repos\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\bin\Debug\Newtonsoft.Json.dll
 C:\Users\Mateusz\Source\Repos\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\obj\Debug\PAteam.AcrobatReaderExtended.Library.csproj.CopyComplete
 C:\Users\Mateusz\OneDrive - PA Team Software Consulting Ltd\Repos\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\bin\Debug\PAteam.AcrobatReaderExtended.Library.dll
@@ -44,3 +43,4 @@ C:\Users\Ronen\Source\Repos\ronenPATeam\NICE-AcrobatReaderExtended\PAteam.Acroba
 C:\Users\Ronen\Source\Repos\ronenPATeam\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\obj\Debug\PAteam.AcrobatReaderExtended.Library.csproj.CopyComplete
 C:\Users\Ronen\Source\Repos\ronenPATeam\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\bin\Debug\log4net.dll
 C:\Users\Ronen\Source\Repos\ronenPATeam\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\bin\Debug\log4net.xml
+C:\Users\Mateusz\Source\Repos\NICE-AcrobatReaderExtended\PAteam.AcrobatReaderExtended.Library\bin\Debug\log4net.xml

@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System;
 using log4net;
+using System.Xml.Linq;
 
 namespace Direct.PDFExtended.Library
 {
@@ -500,6 +501,82 @@ namespace Direct.PDFExtended.Library
             return fieldsRemoved;
         }
 
+        [DirectDom("Test")]
+        [DirectDomMethod("Test {File Path} {Field Size} {Field Position} {Field Options}")]
+        [MethodDescription("Test")]
+        public static bool Test(string filePath, FieldSize fieldSize, FieldPosition fieldPosition, FieldOptions fieldOptions)
+        {
+            if (fieldSize.Width == 0 || fieldSize.Height == 0)
+            {
+                _log.Debug("Width and Height have to be bigger then 0");
+                return false;
+            }
+
+            FileInfo fileInfo = new FileInfo(filePath);
+
+            PdfReader reader = null;
+            PdfStamper stamper = null;
+
+            string newFilePath = Path.Combine(fileInfo.Directory.FullName, Path.GetFileNameWithoutExtension(fileInfo.Name) + "_tmp" + fileInfo.Extension);
+
+            reader = new PdfReader(filePath);
+            stamper = new PdfStamper(reader, new FileStream(newFilePath, FileMode.Create));
+
+            // (lower-left-x, lower-left-y, upper-right-x (llx + width), upper-right-y (lly + height), rotation angle 
+            TextField field = new TextField(stamper.Writer, new Rectangle(10, 9, 110, 209), fieldOptions.FieldName);
+
+            if (fieldOptions.TextAlignment.ToLower() == "right")
+            {
+                field.Alignment = Element.ALIGN_RIGHT;
+            }
+
+
+            //if (!FontFactory.IsRegistered("Arial"))
+            //{
+            //    var fontPath = Path.Combine(Environment.GetEnvironmentVariable("SystemRoot"), "fonts", "Arial", "arial.ttf");
+            //    FontFactory.Register(fontPath);
+            //}
+
+            //Font font = FontFactory.GetFont("Arial", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+
+            //bigger size
+            //field.Font = BaseFont.CreateFont(Path.Combine(Environment.GetEnvironmentVariable("SystemRoot"), "fonts", "ARIAL.TTF"), BaseFont.CP1252, BaseFont.EMBEDDED);
+
+            //lower size
+            field.Font = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.EMBEDDED);
+
+            field.FontSize = fieldOptions.FontSize;
+
+            int options = 0;
+
+            if (fieldOptions.IsMultiline)
+            {
+                options += TextField.MULTILINE;
+            }
+
+            if (fieldOptions.IsReadOnly)
+            {
+                options += TextField.READ_ONLY;
+            }
+
+            if (fieldOptions.IsRequired)
+            {
+                options += TextField.REQUIRED;
+            }
+
+            field.Options = options;
+
+            stamper.AddAnnotation(field.GetTextField(), 1);
+
+            stamper.Close();
+            reader.Close();
+
+            File.Delete(filePath);
+            File.Move(newFilePath, filePath);
+
+            return true;
+        }
+
         private static bool ValidateImageInput(
              string imageFilePath,
              string imageFileName
@@ -569,4 +646,149 @@ namespace Direct.PDFExtended.Library
             return os.ToArray();
         }
     }
+
+    #region Supporting Classes
+
+    [DirectDom("PDF Field Size", "General")]
+    public class FieldSize : DirectComponentBase
+    {
+        protected PropertyHolder<int> _Width = new PropertyHolder<int>("Width");
+        protected PropertyHolder<int> _Height = new PropertyHolder<int>("Height");
+
+
+        [DirectDom("Width")]
+        public int Width
+        {
+            get { return _Width.TypedValue; }
+            set { _Width.TypedValue = value; }
+        }
+
+        [DirectDom("Height")]
+        public int Height
+        {
+            get { return _Height.TypedValue; }
+            set { _Height.TypedValue = value; }
+        }
+
+        public FieldSize()
+        {
+ 
+        }
+
+        public FieldSize(IProject project) : base(project)
+        {
+
+        }
+
+    }
+
+    [DirectDom("PDF Field Position", "General")]
+    public class FieldPosition : DirectComponentBase
+    {
+        protected PropertyHolder<int> _X = new PropertyHolder<int>("X");
+        protected PropertyHolder<int> _Y = new PropertyHolder<int>("Y");
+
+
+        [DirectDom("X")]
+        public int X
+        {
+            get { return _X.TypedValue; }
+            set { _X.TypedValue = value; }
+        }
+
+        [DirectDom("Y")]
+        public int Y
+        {
+            get { return _Y.TypedValue; }
+            set { _Y.TypedValue = value; }
+        }
+
+        public FieldPosition()
+        {
+
+        }
+
+        public FieldPosition(IProject project) : base(project)
+        {
+
+        }
+
+    }
+
+    [DirectDom("PDF Field Options", "General")]
+    public class FieldOptions : DirectComponentBase
+    {
+        protected PropertyHolder<bool> _IsMultiline = new PropertyHolder<bool>("Is Multiline");
+        protected PropertyHolder<bool> _IsRequired = new PropertyHolder<bool>("Is Required");
+        protected PropertyHolder<bool> _IsReadonly = new PropertyHolder<bool>("Is Read Only");
+        protected PropertyHolder<string> _TextAlignment = new PropertyHolder<string>("Text Alignment");
+        protected PropertyHolder<string> _FieldName = new PropertyHolder<string>("Field Name");
+        protected PropertyHolder<bool> _ShouldScroll = new PropertyHolder<bool>("Should Scroll Long Text");
+        protected PropertyHolder<int> _FontSize = new PropertyHolder<int>("Font Size");
+
+
+        [DirectDom("Is Multiline")]
+        public bool IsMultiline
+        {
+            get { return _IsMultiline.TypedValue; }
+            set { _IsMultiline.TypedValue = value; }
+        }
+
+        [DirectDom("Is Required")]
+        public bool IsRequired
+        {
+            get { return _IsRequired.TypedValue; }
+            set { _IsRequired.TypedValue = value; }
+        }
+
+        [DirectDom("Is Read Only")]
+        public bool IsReadOnly
+        {
+            get { return _IsReadonly.TypedValue; }
+            set { _IsReadonly.TypedValue = value; }
+        }
+
+        [DirectDom("Text Alignment")]
+        public string TextAlignment
+        {
+            get { return _TextAlignment.TypedValue; }
+            set { _TextAlignment.TypedValue = value; }
+        }
+
+        [DirectDom("Field Name")]
+        public string FieldName
+        {
+            get { return _FieldName.TypedValue; }
+            set { _FieldName.TypedValue = value; }
+        }
+
+        [DirectDom("Should Scroll Long Text")]
+        public bool ShouldScroll
+        {
+            get { return _ShouldScroll.TypedValue; }
+            set { _ShouldScroll.TypedValue = value; }
+        }
+
+        [DirectDom("Font Size")]
+        public int FontSize
+        {
+            get { return _FontSize.TypedValue; }
+            set { _FontSize.TypedValue = value; }
+        }
+
+
+        public FieldOptions()
+        {
+
+        }
+
+        public FieldOptions(IProject project) : base(project)
+        {
+            ShouldScroll = true;
+            FontSize = 10;
+        }
+
+    }
+
+    #endregion
 }
