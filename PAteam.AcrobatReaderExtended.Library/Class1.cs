@@ -414,23 +414,13 @@ namespace Direct.PDFExtended.Library
                         _log.Debug("Direct.PDFExtended.Library - Image File is Valid");
                         reader = new PdfReader(fullFilePath);
                         stamper = new PdfStamper(reader, new FileStream(fullFilePath + "_temp", FileMode.Create));
-                        AcroFields formFields = stamper.AcroFields;  
+                        AcroFields formFields = stamper.AcroFields;
+                        float[] fieldPositions = formFields.GetFieldPositions(fieldName);
                         Image image = Image.GetInstance(fullImageFilePath);
-                        //image.SetAbsolutePosition(formFields.GetFieldPositions(fieldName)[0], formFields.GetFieldPositions(fieldName)[1]);
-                        //image.ScaleToFit(formFields.GetFieldPositions(fieldName)[2], formFields.GetFieldPositions(fieldName)[3]);
-                        _log.Debug("Direct.PDFExtended.Library " + formFields.GetFieldPositions(fieldName)[0] + "," + formFields.GetFieldPositions(fieldName)[1] + "," + formFields.GetFieldPositions(fieldName)[2] + "," + formFields.GetFieldPositions(fieldName)[3]);
                         Rectangle rect = reader.GetPageSizeWithRotation(1);
-                        _log.Debug("Direct.PDFExtended.Library " + rect.Width + "," + rect.Height);
-                        _log.Debug("Direct.PDFExtended.Library " +image.ScaledWidth + "," + image.ScaledHeight);
-                        if (image.Width > (formFields.GetFieldPositions(fieldName)[2] - formFields.GetFieldPositions(fieldName)[0]) || image.Height > (formFields.GetFieldPositions(fieldName)[3] - formFields.GetFieldPositions(fieldName)[1]))
-                        {
-                            image.ScaleToFit(formFields.GetFieldPositions(fieldName)[2]-formFields.GetFieldPositions(fieldName)[0], formFields.GetFieldPositions(fieldName)[3] - formFields.GetFieldPositions(fieldName)[1]);
-                            image.SetAbsolutePosition(formFields.GetFieldPositions(fieldName)[0], formFields.GetFieldPositions(fieldName)[1]);
-                        }
-                        else
-                        {
-                            image.SetAbsolutePosition(formFields.GetFieldPositions(fieldName)[0], formFields.GetFieldPositions(fieldName)[1]);
-                        }
+                        image.ScaleToFit(fieldPositions[3] - fieldPositions[1], fieldPositions[4] - fieldPositions[2]);
+                        image.SetAbsolutePosition(fieldPositions[1], fieldPositions[4] - image.ScaledHeight);
+                        formFields.RemoveField(fieldName);
                         PdfContentByte canvas = stamper.GetOverContent(1);
                         canvas.AddImage(image);
                         flag = true;
@@ -452,6 +442,62 @@ namespace Direct.PDFExtended.Library
 
             return flag;
 
+        }
+
+        [DirectDom("Remove form fields from document")]
+        [DirectDomMethod("Remove form fields {Form Fields} from PDF file {Input File Path} {Input File Name}")]
+        [MethodDescription("Remove form fields from PDF file.")]
+        public static bool RemoveFormFieldsFromDocument(DirectCollection<string> fieldNames,string path, string fileName)
+        {
+            bool fieldsRemoved = false;
+            PdfReader reader = null;
+            PdfStamper stamper = null;
+            string fullFilePath = Path.Combine(path, fileName);
+            try
+            {
+                if (_log.IsDebugEnabled)
+                {
+                    _log.Debug("Direct.PDFExtended.Library - Removing all form fields from pdf file: " + fullFilePath );
+                }
+                if(!fieldNames.IsEmpty)
+                {
+                    if (ValidateInput(path, fileName, string.Empty))
+                    {
+                         _log.Debug("Direct.PDFExtended.Library - File is Valid");
+                         reader = new PdfReader(fullFilePath);
+                         stamper = new PdfStamper(reader, new FileStream(fullFilePath + "_temp", FileMode.Create));
+                         AcroFields formFields = stamper.AcroFields;
+                         foreach (string fieldName in fieldNames)
+                         {
+                            formFields.RemoveField(fieldName);
+                         }
+                         fieldsRemoved = true;
+                    }
+                }
+                else
+                {
+                    throw new Exception("Form Fields list is empty");
+                }
+            }
+            catch (Exception e)
+            {
+                _log.Error("Direct.PDFExtended.Library - Removing all form fields from PDF file failed with Exception:", e);
+            }
+            finally
+            {
+                stamper.Close();
+                reader.Close();
+                if(fieldsRemoved)
+                {
+                    File.Delete(fullFilePath);
+                    File.Move(fullFilePath + "_temp", fullFilePath);
+                }
+            }
+            if (_log.IsDebugEnabled)
+            {
+                _log.Debug("Direct.PDFExtended.Library - Completed Removing all pdf form fields.");
+            }
+            return fieldsRemoved;
         }
 
         private static bool ValidateImageInput(
