@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System;
 using log4net;
-using System.Xml.Linq;
+
 
 namespace Direct.PDFExtended.Library
 {
@@ -235,12 +235,12 @@ namespace Direct.PDFExtended.Library
                             rectangle.BackgroundColor = Color.WHITE;
                             overContent.Rectangle(rectangle);
                             ColumnText.ShowTextAligned(
-                                overContent, 
-                                2, 
+                                overContent,
+                                2,
                                 new Phrase(
-                                    new Chunk(string.Format("{0}", num++), 
+                                    new Chunk(string.Format("{0}", num++),
                                     FontFactory.GetFont("Helvetica", 7f, 0, Color.BLACK))
-                                ), 
+                                ),
                                 570f, 10f, 0.0f);
                             pageStamp.AlterContents();
                         }
@@ -339,13 +339,13 @@ namespace Direct.PDFExtended.Library
         [DirectDom("Check PDF File for Password Protection")]
         [DirectDomMethod("Check {Input File Full Path} for password protection")]
         [MethodDescription("Checks if the file in the filepath is password protected or not.")]
-        public static bool IsPdfPasswordProtected(string path,string fileName)
+        public static bool IsPdfPasswordProtected(string path, string fileName)
         {
             bool isPasswordProtected = false;
             string fullFilePath = Path.Combine(path, fileName);
             PdfReader reader = null;
             try
-            {                
+            {
                 if (_log.IsDebugEnabled)
                 {
                     _log.Debug("Direct.PDFExtended.Library - Checking pdf file: " + fullFilePath + " for password protection");
@@ -438,7 +438,7 @@ namespace Direct.PDFExtended.Library
                 stamper.Close();
                 reader.Close();
                 File.Delete(fullFilePath);
-                File.Move(fullFilePath + "_temp", fullFilePath);                
+                File.Move(fullFilePath + "_temp", fullFilePath);
             }
 
             return flag;
@@ -448,7 +448,7 @@ namespace Direct.PDFExtended.Library
         [DirectDom("Remove form fields from document")]
         [DirectDomMethod("Remove form fields {Form Fields} from PDF file {Input File Path} {Input File Name}")]
         [MethodDescription("Remove form fields from PDF file.")]
-        public static bool RemoveFormFieldsFromDocument(DirectCollection<string> fieldNames,string path, string fileName)
+        public static bool RemoveFormFieldsFromDocument(DirectCollection<string> fieldNames, string path, string fileName)
         {
             bool fieldsRemoved = false;
             PdfReader reader = null;
@@ -458,21 +458,21 @@ namespace Direct.PDFExtended.Library
             {
                 if (_log.IsDebugEnabled)
                 {
-                    _log.Debug("Direct.PDFExtended.Library - Removing all form fields from pdf file: " + fullFilePath );
+                    _log.Debug("Direct.PDFExtended.Library - Removing all form fields from pdf file: " + fullFilePath);
                 }
-                if(!fieldNames.IsEmpty)
+                if (!fieldNames.IsEmpty)
                 {
                     if (ValidateInput(path, fileName, string.Empty))
                     {
-                         _log.Debug("Direct.PDFExtended.Library - File is Valid");
-                         reader = new PdfReader(fullFilePath);
-                         stamper = new PdfStamper(reader, new FileStream(fullFilePath + "_temp", FileMode.Create));
-                         AcroFields formFields = stamper.AcroFields;
-                         foreach (string fieldName in fieldNames)
-                         {
+                        _log.Debug("Direct.PDFExtended.Library - File is Valid");
+                        reader = new PdfReader(fullFilePath);
+                        stamper = new PdfStamper(reader, new FileStream(fullFilePath + "_temp", FileMode.Create));
+                        AcroFields formFields = stamper.AcroFields;
+                        foreach (string fieldName in fieldNames)
+                        {
                             formFields.RemoveField(fieldName);
-                         }
-                         fieldsRemoved = true;
+                        }
+                        fieldsRemoved = true;
                     }
                 }
                 else
@@ -488,7 +488,7 @@ namespace Direct.PDFExtended.Library
             {
                 stamper.Close();
                 reader.Close();
-                if(fieldsRemoved)
+                if (fieldsRemoved)
                 {
                     File.Delete(fullFilePath);
                     File.Move(fullFilePath + "_temp", fullFilePath);
@@ -501,95 +501,142 @@ namespace Direct.PDFExtended.Library
             return fieldsRemoved;
         }
 
-        [DirectDom("Test")]
-        [DirectDomMethod("Test {File Path} {Field Size} {Field Position} {Field Options}")]
-        [MethodDescription("Test")]
-        public static bool Test(string filePath, FieldSize fieldSize, FieldPosition fieldPosition, FieldOptions fieldOptions)
+        [DirectDom("Add Form Fields")]
+        [DirectDomMethod("Add to file: {File Path} following form fields: {PDF Fields}")]
+        [MethodDescription("Adds programmatically new form fields to input pdf document")]
+        public static bool AddFormFields(string filePath, DirectCollection<PDFField> pdfFields)
         {
-            // todo
-            // refactor to open like here: https://gist.github.com/adamzuckerman/77290668705122b7aff6
-
 
             if (string.IsNullOrEmpty(filePath))
             {
-                _log.Debug("Path to file where to add field is empty");
+                _log.Debug("Path to document where new fields should be added is empty");
                 return false;
             }
 
-            if (string.IsNullOrEmpty(fieldOptions.FieldName))
-            {
-                _log.Debug("Field Name is empty");
-                return false;
-            }
-
-
-            if (fieldSize.Width == 0 || fieldSize.Height == 0)
-            {
-                _log.Debug("Width and Height have to be bigger then 0");
-                return false;
-            }
-
-            FileInfo fileInfo = new FileInfo(filePath);
+            bool result = false;
+            bool shouldDeleteTempFile = false;
+            bool shouldOverwriteInputFile = false;
 
             PdfReader reader = null;
             PdfStamper stamper = null;
 
-            string newFilePath = Path.Combine(fileInfo.Directory.FullName, Path.GetFileNameWithoutExtension(fileInfo.Name) + "_tmp" + fileInfo.Extension);
+            FileInfo fileInfo = new FileInfo(filePath);
+            string tempFilePath = Path.Combine(fileInfo.Directory.FullName, Path.GetFileNameWithoutExtension(fileInfo.Name) + "_tmp" + fileInfo.Extension);
 
-            reader = new PdfReader(filePath);
-            stamper = new PdfStamper(reader, new FileStream(newFilePath, FileMode.Create));
-
-            // (lower-left-x, lower-left-y, upper-right-x (llx + width), upper-right-y (lly + height), rotation angle 
-            TextField field = new TextField(
-                stamper.Writer, 
-                new Rectangle(fieldPosition.X, fieldPosition.Y, fieldPosition.X + fieldSize.Width, fieldPosition.Y + fieldSize.Height), 
-                fieldOptions.FieldName
-            );
-
-            if (fieldOptions.TextAlignment.ToLower() == "right")
+            int fieldCounter = 1;
+            try
             {
-                field.Alignment = Element.ALIGN_RIGHT;
+                reader = new PdfReader(filePath);
+                stamper = new PdfStamper(reader, new FileStream(tempFilePath, FileMode.Create));
+                shouldDeleteTempFile = true;
+
+
+                if (_log.IsDebugEnabled)
+                {
+                    _log.Debug("Direct.PDFExtended.Library - Add Form Fields: start iterating over supplied list");
+                }
+
+                foreach (PDFField pdfField in pdfFields)
+                {
+                    if (_log.IsDebugEnabled)
+                    {
+                        _log.Debug("Direct.PDFExtended.Library - Add Form Fields: iterating field: " + fieldCounter);
+                    }
+
+                    if (string.IsNullOrEmpty(pdfField.Name))
+                    {
+                        throw new Exception("Field Name for field at position " + fieldCounter + " is empty!");
+                    }
+
+
+                    if (pdfField.Size.Width == 0 || pdfField.Size.Height == 0)
+                    {
+                        throw new Exception("Width and Height have to be bigger then 0 for field at position " + fieldCounter);
+                    }
+
+                    // (lower-left-x, lower-left-y, upper-right-x (llx + width), upper-right-y (lly + height), rotation angle 
+                    TextField field = new TextField(
+                        stamper.Writer,
+                        new Rectangle(
+                            (float)pdfField.Position.X,
+                            (float)pdfField.Position.Y,
+                            (float)(pdfField.Position.X + pdfField.Size.Width),
+                            (float)(pdfField.Position.Y + pdfField.Size.Height)
+                        ),
+                        pdfField.Name
+                    );
+
+                    if (pdfField.FieldProperties.TextAlignment.ToLower() == "right")
+                    {
+                        field.Alignment = Element.ALIGN_RIGHT;
+                    }
+
+                    if (!string.IsNullOrEmpty(pdfField.FieldProperties.CustomFont))
+                    {
+                        field.Font = BaseFont.CreateFont(pdfField.FieldProperties.CustomFont, BaseFont.CP1252, BaseFont.EMBEDDED);
+                    }
+                    else
+                    {
+                        field.Font = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+                    }
+
+                    field.FontSize = pdfField.FieldProperties.FontSize;
+
+                    int options = 0;
+
+                    if (pdfField.FieldProperties.IsMultiline)
+                    {
+                        options += BaseField.MULTILINE;
+                    }
+
+                    if (pdfField.FieldProperties.IsReadOnly)
+                    {
+                        options += BaseField.READ_ONLY;
+                    }
+
+                    if (pdfField.FieldProperties.IsRequired)
+                    {
+                        options += BaseField.REQUIRED;
+                    }
+
+                    field.Options = options;
+
+                    stamper.AddAnnotation(field.GetTextField(), 1);
+
+                    if (_log.IsDebugEnabled)
+                    {
+                        _log.Debug("Direct.PDFExtended.Library - Add Form Fields: Field " + fieldCounter + " added with success");
+                    }
+
+                    fieldCounter++;
+                }
+
+                shouldOverwriteInputFile = true;
+                result = true;
+            }
+            catch (Exception e)
+            {
+                _log.Error("Direct.PDFExtended.Library - Failed to add fields:", e);
+            }
+            finally
+            {
+                stamper.Close();
+                reader.Close();
+
+                if (!shouldOverwriteInputFile && shouldDeleteTempFile)
+                {
+                    File.Delete(tempFilePath);
+                }
+
+                if (shouldDeleteTempFile && shouldOverwriteInputFile)
+                {
+                    File.Delete(filePath);
+                    File.Move(tempFilePath, filePath);
+                }
+
             }
 
-            if (!string.IsNullOrEmpty(fieldOptions.CustomFont))
-            {
-                field.Font = BaseFont.CreateFont(fieldOptions.CustomFont, BaseFont.CP1252, BaseFont.EMBEDDED);
-            }
-            else
-            {
-                field.Font = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
-            }
-
-            field.FontSize = fieldOptions.FontSize;
-
-            int options = 0;
-
-            if (fieldOptions.IsMultiline)
-            {
-                options += BaseField.MULTILINE;
-            }
-
-            if (fieldOptions.IsReadOnly)
-            {
-                options += BaseField.READ_ONLY;
-            }
-
-            if (fieldOptions.IsRequired)
-            {
-                options += BaseField.REQUIRED;
-            }
-
-            field.Options = options;
-
-            stamper.AddAnnotation(field.GetTextField(), 1);
-
-            stamper.Close();
-            reader.Close();
-
-            File.Delete(filePath);
-            File.Move(newFilePath, filePath);
-
-            return true;
+            return result;
         }
 
         private static bool ValidateImageInput(
@@ -597,7 +644,7 @@ namespace Direct.PDFExtended.Library
              string imageFileName
              )
         {
-            _log.Debug("Direct.PDFExtended.Library - ValidateImageInput Parameters: "+ imageFilePath +", "+ imageFileName);
+            _log.Debug("Direct.PDFExtended.Library - ValidateImageInput Parameters: " + imageFilePath + ", " + imageFileName);
             string fullFilePath = Path.Combine(imageFilePath, imageFileName);
             if (!string.IsNullOrEmpty(imageFileName) &&
                  imageFileName.Length >= 5 &&
@@ -661,158 +708,4 @@ namespace Direct.PDFExtended.Library
             return os.ToArray();
         }
     }
-
-    #region Supporting Classes
-
-    [DirectDom("PDF Field Size", "General")]
-    public class FieldSize : DirectComponentBase
-    {
-        protected PropertyHolder<int> _Width = new PropertyHolder<int>("Width");
-        protected PropertyHolder<int> _Height = new PropertyHolder<int>("Height");
-
-
-        [DirectDom("Width")]
-        public int Width
-        {
-            get { return _Width.TypedValue; }
-            set { _Width.TypedValue = value; }
-        }
-
-        [DirectDom("Height")]
-        public int Height
-        {
-            get { return _Height.TypedValue; }
-            set { _Height.TypedValue = value; }
-        }
-
-        public FieldSize()
-        {
- 
-        }
-
-        public FieldSize(IProject project) : base(project)
-        {
-
-        }
-
-    }
-
-    [DirectDom("PDF Field Position", "General")]
-    public class FieldPosition : DirectComponentBase
-    {
-        protected PropertyHolder<int> _X = new PropertyHolder<int>("X");
-        protected PropertyHolder<int> _Y = new PropertyHolder<int>("Y");
-
-
-        [DirectDom("X")]
-        public int X
-        {
-            get { return _X.TypedValue; }
-            set { _X.TypedValue = value; }
-        }
-
-        [DirectDom("Y")]
-        public int Y
-        {
-            get { return _Y.TypedValue; }
-            set { _Y.TypedValue = value; }
-        }
-
-        public FieldPosition()
-        {
-
-        }
-
-        public FieldPosition(IProject project) : base(project)
-        {
-
-        }
-
-    }
-
-    [DirectDom("PDF Field Options", "General")]
-    public class FieldOptions : DirectComponentBase
-    {
-        protected PropertyHolder<bool> _IsMultiline = new PropertyHolder<bool>("Is Multiline");
-        protected PropertyHolder<bool> _IsRequired = new PropertyHolder<bool>("Is Required");
-        protected PropertyHolder<bool> _IsReadonly = new PropertyHolder<bool>("Is Read Only");
-        protected PropertyHolder<string> _TextAlignment = new PropertyHolder<string>("Text Alignment");
-        protected PropertyHolder<string> _FieldName = new PropertyHolder<string>("Field Name");
-        protected PropertyHolder<string> _CustomFont = new PropertyHolder<string>("Custom Font Path");
-        protected PropertyHolder<bool> _ShouldScroll = new PropertyHolder<bool>("Should Scroll Long Text");
-        protected PropertyHolder<int> _FontSize = new PropertyHolder<int>("Font Size");
-
-
-        [DirectDom("Is Multiline")]
-        public bool IsMultiline
-        {
-            get { return _IsMultiline.TypedValue; }
-            set { _IsMultiline.TypedValue = value; }
-        }
-
-        [DirectDom("Is Required")]
-        public bool IsRequired
-        {
-            get { return _IsRequired.TypedValue; }
-            set { _IsRequired.TypedValue = value; }
-        }
-
-        [DirectDom("Is Read Only")]
-        public bool IsReadOnly
-        {
-            get { return _IsReadonly.TypedValue; }
-            set { _IsReadonly.TypedValue = value; }
-        }
-
-        [DirectDom("Text Alignment")]
-        public string TextAlignment
-        {
-            get { return _TextAlignment.TypedValue; }
-            set { _TextAlignment.TypedValue = value; }
-        }
-
-        [DirectDom("Field Name")]
-        public string FieldName
-        {
-            get { return _FieldName.TypedValue; }
-            set { _FieldName.TypedValue = value; }
-        }
-
-        [DirectDom("Custom Font Path")]
-        public string CustomFont
-        {
-            get { return _CustomFont.TypedValue; }
-            set { _CustomFont.TypedValue = value; }
-        }
-
-        [DirectDom("Should Scroll Long Text")]
-        public bool ShouldScroll
-        {
-            get { return _ShouldScroll.TypedValue; }
-            set { _ShouldScroll.TypedValue = value; }
-        }
-
-        [DirectDom("Font Size")]
-        public int FontSize
-        {
-            get { return _FontSize.TypedValue; }
-            set { _FontSize.TypedValue = value; }
-        }
-
-
-        public FieldOptions()
-        {
-
-        }
-
-        public FieldOptions(IProject project) : base(project)
-        {
-            ShouldScroll = true;
-            FontSize = 10;
-            TextAlignment = "left";
-        }
-
-    }
-
-    #endregion
 }

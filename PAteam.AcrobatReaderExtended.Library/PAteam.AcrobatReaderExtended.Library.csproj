@@ -60,6 +60,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Class1.cs" />
+    <Compile Include="FieldPosition.cs" />
+    <Compile Include="FieldProperties.cs" />
+    <Compile Include="FieldSize.cs" />
+    <Compile Include="PDFField.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
