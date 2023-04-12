@@ -3,8 +3,6 @@
 
 namespace Direct.PDFExtended.Library
 {
-    #region Supporting Classes
-
     [DirectDom("PDF Field Properties", "General")]
     public class FieldProperties : DirectComponentBase
     {
@@ -15,6 +13,7 @@ namespace Direct.PDFExtended.Library
         protected PropertyHolder<string> _CustomFont = new PropertyHolder<string>("Custom Font Path");
         protected PropertyHolder<bool> _ShouldScroll = new PropertyHolder<bool>("Should Scroll Long Text");
         protected PropertyHolder<int> _FontSize = new PropertyHolder<int>("Font Size");
+        protected PropertyHolder<bool> _FontBold = new PropertyHolder<bool>("Font Bold");
 
 
         [DirectDom("Is Multiline")]
@@ -73,6 +72,14 @@ namespace Direct.PDFExtended.Library
             set { _FontSize.TypedValue = value; }
         }
 
+        [DirectDom("Font Bold")]
+        [DesignTimeInfo("Font Bold")]
+        public bool FontBold
+        {
+            get { return _FontBold.TypedValue; }
+            set { _FontBold.TypedValue = value; }
+        }
+
 
         public FieldProperties()
         {
@@ -87,6 +94,4 @@ namespace Direct.PDFExtended.Library
         }
 
     }
-
-    #endregion
 }

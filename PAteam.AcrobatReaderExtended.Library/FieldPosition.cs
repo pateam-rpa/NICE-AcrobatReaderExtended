@@ -3,8 +3,6 @@
 
 namespace Direct.PDFExtended.Library
 {
-    #region Supporting Classes
-
     [DirectDom("PDF Field Position", "General")]
     public class FieldPosition : DirectComponentBase
     {
@@ -39,6 +37,4 @@ namespace Direct.PDFExtended.Library
         }
 
     }
-
-    #endregion
 }

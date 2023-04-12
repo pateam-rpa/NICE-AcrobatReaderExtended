@@ -3,9 +3,6 @@
 
 namespace Direct.PDFExtended.Library
 {
-    #region Supporting Classes
-
-
     [DirectDom("PDF Field Size", "General")]
     public class FieldSize : DirectComponentBase
     {
@@ -40,6 +37,4 @@ namespace Direct.PDFExtended.Library
         }
 
     }
-
-    #endregion
 }

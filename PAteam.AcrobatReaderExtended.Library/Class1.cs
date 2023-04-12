@@ -580,7 +580,15 @@ namespace Direct.PDFExtended.Library
                     }
                     else
                     {
-                        field.Font = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+                        if (pdfField.FieldProperties.FontBold)
+                        {
+                            field.Font = BaseFont.CreateFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+                        }
+                        else
+                        {
+                            field.Font = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+                        }
+
                     }
 
                     field.FontSize = pdfField.FieldProperties.FontSize;
@@ -649,7 +657,10 @@ namespace Direct.PDFExtended.Library
         {
             if (string.IsNullOrEmpty(inputFilePath))
             {
-                _log.Debug("Direct.PDFExtended.Library - Flatten PDF: input file path is empty");
+                if (_log.IsDebugEnabled)
+                {
+                    _log.Debug("Direct.PDFExtended.Library - Flatten PDF: input file path is empty");
+                }
                 return false;
             }
 
@@ -659,6 +670,10 @@ namespace Direct.PDFExtended.Library
 
             try
             {
+                if (_log.IsDebugEnabled)
+                {
+                    _log.Debug("Direct.PDFExtended.Library - Flatten PDF: Flattenning...");
+                }
                 byte[] pdfFile = File.ReadAllBytes(inputFilePath);
                 reader = new PdfReader(pdfFile);
                 stamper = new PdfStamper(reader, new FileStream(inputFilePath, FileMode.Create));
@@ -667,6 +682,11 @@ namespace Direct.PDFExtended.Library
                 stamper.FormFlattening = true;
 
                 reader.RemoveUnusedObjects();
+
+                if (_log.IsDebugEnabled)
+                {
+                    _log.Debug("Direct.PDFExtended.Library - Flatten PDF: Success");
+                }
 
                 result = true;
             }
