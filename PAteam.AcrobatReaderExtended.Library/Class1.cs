@@ -7,6 +7,8 @@ using System.Diagnostics;
 using System.IO;
 using System;
 using log4net;
+using System.Runtime.Remoting.Messaging;
+using Org.BouncyCastle.OpenSsl;
 
 
 namespace Direct.PDFExtended.Library
@@ -250,6 +252,7 @@ namespace Direct.PDFExtended.Library
                     {
                         pdfSmartCopy.CopyAcroForm(reader);
                     }
+
                     pdfSmartCopy.FreeReader(reader);
                 }
                 returnFlag = true;
@@ -502,14 +505,14 @@ namespace Direct.PDFExtended.Library
         }
 
         [DirectDom("Add Form Fields")]
-        [DirectDomMethod("Add to file: {File Path} following form fields: {PDF Fields}")]
+        [DirectDomMethod("Add to file: {File Path} the following form fields: {PDF Fields}")]
         [MethodDescription("Adds programmatically new form fields to input pdf document")]
         public static bool AddFormFields(string filePath, DirectCollection<PDFField> pdfFields)
         {
 
             if (string.IsNullOrEmpty(filePath))
             {
-                _log.Debug("Path to document where new fields should be added is empty");
+                _log.Debug("Direct.PDFExtended.Library - Add Form Fields: Path to document where new fields should be added is empty");
                 return false;
             }
 
@@ -545,13 +548,13 @@ namespace Direct.PDFExtended.Library
 
                     if (string.IsNullOrEmpty(pdfField.Name))
                     {
-                        throw new Exception("Field Name for field at position " + fieldCounter + " is empty!");
+                        throw new Exception("Direct.PDFExtended.Library - Add Form Fields: Field Name for field at position " + fieldCounter + " is empty!");
                     }
 
 
                     if (pdfField.Size.Width == 0 || pdfField.Size.Height == 0)
                     {
-                        throw new Exception("Width and Height have to be bigger then 0 for field at position " + fieldCounter);
+                        throw new Exception("Direct.PDFExtended.Library - Add Form Fields: Width and Height have to be bigger then 0 for field at position " + fieldCounter);
                     }
 
                     // (lower-left-x, lower-left-y, upper-right-x (llx + width), upper-right-y (lly + height), rotation angle 
@@ -616,12 +619,12 @@ namespace Direct.PDFExtended.Library
             }
             catch (Exception e)
             {
-                _log.Error("Direct.PDFExtended.Library - Failed to add fields:", e);
+                _log.Error("Direct.PDFExtended.Library - Add Form Fields: Failed to add fields", e);
             }
             finally
             {
-                stamper.Close();
-                reader.Close();
+                stamper?.Close();
+                reader?.Close();
 
                 if (!shouldOverwriteInputFile && shouldDeleteTempFile)
                 {
@@ -638,6 +641,48 @@ namespace Direct.PDFExtended.Library
 
             return result;
         }
+
+        [DirectDom("Flatten PDF Form")]
+        [DirectDomMethod("Flatten PDF form from file {Source File Path}")]
+        [MethodDescription("Flattens PDF Form")]
+        public static bool FlattenForm(string inputFilePath)
+        {
+            if (string.IsNullOrEmpty(inputFilePath))
+            {
+                _log.Debug("Direct.PDFExtended.Library - Flatten PDF: input file path is empty");
+                return false;
+            }
+
+            bool result = false;
+            PdfReader reader = null;
+            PdfStamper stamper = null;
+
+            try
+            {
+                byte[] pdfFile = File.ReadAllBytes(inputFilePath);
+                reader = new PdfReader(pdfFile);
+                stamper = new PdfStamper(reader, new FileStream(inputFilePath, FileMode.Create));
+
+                stamper.AcroFields.GenerateAppearances = true;
+                stamper.FormFlattening = true;
+
+                reader.RemoveUnusedObjects();
+
+                result = true;
+            }
+            catch (Exception e)
+            {
+                _log.Error("Direct.PDFExtended.Library - Flatten PDF: failed to flatten form", e);
+            }
+            finally
+            {
+                reader?.Close();
+                stamper?.Close();
+            } 
+            
+            return result;
+        }
+
 
         private static bool ValidateImageInput(
              string imageFilePath,
