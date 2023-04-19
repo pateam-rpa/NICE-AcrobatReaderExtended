@@ -9,7 +9,7 @@ using System;
 using log4net;
 using System.Runtime.Remoting.Messaging;
 using Org.BouncyCastle.OpenSsl;
-
+using System.Security.Policy;
 
 namespace Direct.PDFExtended.Library
 {
@@ -701,6 +701,54 @@ namespace Direct.PDFExtended.Library
             } 
             
             return result;
+        }
+
+        [DirectDom("Get Form Field Names")]
+        [DirectDomMethod("Get form field names from file: {Full File Path}")]
+        [MethodDescription("Gets and return form field names from supplied document")]
+        public static DirectCollection<string> GetFormFieldNames(string inputFilePath)
+        {
+            if (string.IsNullOrEmpty(inputFilePath))
+            {
+                if (_log.IsDebugEnabled)
+                {
+                    _log.Debug("Direct.PDFExtended.Library - Get Form Field Names: input file path is empty");
+                }
+                return new DirectCollection<string>();
+            }
+
+            DirectCollection<string> result = new DirectCollection<string>();
+            MemoryStream os = null;
+            PdfReader reader = null;
+            PdfStamper pdfStamper = null;
+            try
+            {
+                os = new MemoryStream();
+                reader = new PdfReader(inputFilePath);
+                pdfStamper = new PdfStamper(reader, os);
+                AcroFields acroFields = pdfStamper.AcroFields;
+                if (_log.IsDebugEnabled)
+                {
+                    _log.Debug($"Direct.PDFExtended.Library - Get Form Field Names: fields count: {reader.AcroFields.Fields.Keys.Count}");
+                }
+                foreach (string key in (IEnumerable)reader.AcroFields.Fields.Keys)
+                {
+                    result.Add(key);
+                }
+            }
+            catch (Exception e)
+            {
+                _log.Error("Direct.PDFExtended.Library - Get Form Field Names: failed to get field name", e);
+                result = new DirectCollection<string>();
+            }
+            finally
+            {
+                pdfStamper?.Close();
+                reader?.Close();
+            }
+
+            return result;
+
         }
 
 
