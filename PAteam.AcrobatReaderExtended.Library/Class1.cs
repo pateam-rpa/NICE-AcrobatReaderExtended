@@ -703,9 +703,9 @@ namespace Direct.PDFExtended.Library
             return result;
         }
 
-        [DirectDom("Get Form Field Names")]
-        [DirectDomMethod("Get form field names from file: {Full File Path}")]
-        [MethodDescription("Gets and return form field names from supplied document")]
+        [DirectDom("Get Form Fields Names")]
+        [DirectDomMethod("Get form fields names from file: {Full File Path}")]
+        [MethodDescription("Gets and return form fields names from supplied document")]
         public static DirectCollection<string> GetFormFieldNames(string inputFilePath)
         {
             if (string.IsNullOrEmpty(inputFilePath))
