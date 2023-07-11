@@ -7,9 +7,9 @@ using System.Diagnostics;
 using System.IO;
 using System;
 using log4net;
-using System.Runtime.Remoting.Messaging;
-using Org.BouncyCastle.OpenSsl;
-using System.Security.Policy;
+using Word = Microsoft.Office.Interop.Word;
+using Excel = Microsoft.Office.Interop.Excel;
+using System.Drawing;
 
 namespace Direct.PDFExtended.Library
 {
@@ -233,15 +233,15 @@ namespace Direct.PDFExtended.Library
                         {
                             PdfCopy.PageStamp pageStamp = pdfSmartCopy.CreatePageStamp(importedPage);
                             PdfContentByte overContent = pageStamp.GetOverContent();
-                            Rectangle rectangle = new Rectangle(520f, 6f, 570f, 18f);
-                            rectangle.BackgroundColor = Color.WHITE;
+                            iTextSharp.text.Rectangle rectangle = new iTextSharp.text.Rectangle(520f, 6f, 570f, 18f);
+                            rectangle.BackgroundColor = iTextSharp.text.Color.WHITE;
                             overContent.Rectangle(rectangle);
                             ColumnText.ShowTextAligned(
                                 overContent,
                                 2,
                                 new Phrase(
                                     new Chunk(string.Format("{0}", num++),
-                                    FontFactory.GetFont("Helvetica", 7f, 0, Color.BLACK))
+                                    FontFactory.GetFont("Helvetica", 7f, 0, iTextSharp.text.Color.BLACK))
                                 ),
                                 570f, 10f, 0.0f);
                             pageStamp.AlterContents();
@@ -420,8 +420,8 @@ namespace Direct.PDFExtended.Library
                         stamper = new PdfStamper(reader, new FileStream(fullFilePath + "_temp", FileMode.Create));
                         AcroFields formFields = stamper.AcroFields;
                         float[] fieldPositions = formFields.GetFieldPositions(fieldName);
-                        Image image = Image.GetInstance(fullImageFilePath);
-                        Rectangle rect = reader.GetPageSizeWithRotation(1);
+                        iTextSharp.text.Image image = iTextSharp.text.Image.GetInstance(fullImageFilePath);
+                        iTextSharp.text.Rectangle rect = reader.GetPageSizeWithRotation(1);
                         image.ScaleToFit(fieldPositions[3] - fieldPositions[1], fieldPositions[4] - fieldPositions[2]);
                         image.SetAbsolutePosition(fieldPositions[1], fieldPositions[4] - image.ScaledHeight);
                         formFields.RemoveField(fieldName);
@@ -560,7 +560,7 @@ namespace Direct.PDFExtended.Library
                     // (lower-left-x, lower-left-y, upper-right-x (llx + width), upper-right-y (lly + height), rotation angle 
                     TextField field = new TextField(
                         stamper.Writer,
-                        new Rectangle(
+                        new iTextSharp.text.Rectangle(
                             (float)pdfField.Position.X,
                             (float)pdfField.Position.Y,
                             (float)(pdfField.Position.X + pdfField.Size.Width),
@@ -751,6 +751,172 @@ namespace Direct.PDFExtended.Library
 
         }
 
+        [DirectDom("Convert Image To PDF")]
+        [DirectDomMethod("Convert Image {Image Path} to PDF {Output Full File Name}")]
+        [MethodDescription("Converts Image to PDF")]
+        public static bool ConvertImageToPDF(string inputImageFilePath, string outputPDFFilePath)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(inputImageFilePath) || string.IsNullOrEmpty(outputPDFFilePath))
+                {
+                    if (_log.IsDebugEnabled)
+                    {
+                        _log.Debug("Direct.PDFExtended.Library - Convert Image To PDF: missing arguments");
+                    }
+                    return false;
+                }
+
+                if (!System.Web.MimeMapping.GetMimeMapping(inputImageFilePath).StartsWith("image/"))
+                {
+                    if (_log.IsDebugEnabled)
+                    {
+                        _log.Debug("Direct.PDFExtended.Library - Convert Image To PDF: provided image is not of valid extension");
+                    }
+                    return false;
+                }
+
+                iTextSharp.text.Rectangle pageSize = null;
+
+                using (var srcImage = new Bitmap(inputImageFilePath))
+                {
+                    pageSize = new iTextSharp.text.Rectangle(0, 0, srcImage.Width, srcImage.Height);
+                }
+                using (var ms = new MemoryStream())
+                {
+                    var document = new Document(pageSize, 0, 0, 0, 0);
+                    PdfWriter.GetInstance(document, ms).SetFullCompression();
+                    document.Open();
+                    var image = iTextSharp.text.Image.GetInstance(inputImageFilePath);
+                    document.Add(image);
+                    document.Close();
+
+                    File.WriteAllBytes(outputPDFFilePath, ms.ToArray());
+                }
+
+                return true;
+
+            }
+            catch (Exception e)
+            {
+                _log.Error("Direct.PDFExtended.Library - Convert Image To PDF: unexpected exception occured: ", e);
+                return false;
+            }
+
+        }
+
+        [DirectDom("Convert Word To PDF")]
+        [DirectDomMethod("Convert Word File {Word Path} to PDF {Output Full File Name}")]
+        [MethodDescription("Converts Word to PDF")]
+        public static bool ConvertWordToPDF(string inputFilePath, string outputPDFFilePath)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(inputFilePath) || string.IsNullOrEmpty(outputPDFFilePath))
+                {
+                    if (_log.IsDebugEnabled)
+                    {
+                        _log.Debug("Direct.PDFExtended.Library - Convert Word To PDF: missing arguments");
+                    }
+                    return false;
+                }
+
+                if (!System.Web.MimeMapping.GetMimeMapping(inputFilePath).Equals("application/msword") && 
+                    !System.Web.MimeMapping.GetMimeMapping(inputFilePath).Equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+                {
+                    if (_log.IsDebugEnabled)
+                    {
+                        _log.Debug("Direct.PDFExtended.Library - Convert Word To PDF: provided word file is not of valid extension");
+                    }
+                    return false;
+                }
+
+                object missingValue = System.Reflection.Missing.Value;
+
+                Word.Application wordApp = new Word.Application
+                {
+                    Visible = false,
+                    DisplayAlerts = Word.WdAlertLevel.wdAlertsNone
+           
+                };
+                Word.Document doc = wordApp.Documents.Open(inputFilePath);
+                doc.Activate();
+
+                doc.SaveAs(outputPDFFilePath, Word.WdSaveFormat.wdFormatPDF, missingValue, missingValue, missingValue, missingValue, missingValue, missingValue, missingValue, missingValue, missingValue, missingValue, missingValue, missingValue, missingValue, missingValue);
+
+                doc.Close();
+                wordApp.Quit();
+
+                releaseComObject(doc);
+                releaseComObject(wordApp);
+
+                return true;
+
+            }
+            catch (Exception e)
+            {
+                _log.Error("Direct.PDFExtended.Library - Convert Word To PDF: unexpected exception occured: ", e);
+                return false;
+            }
+
+        }
+
+        [DirectDom("Convert Excel To PDF")]
+        [DirectDomMethod("Convert Excel File {Excel Path} to PDF {Output Full File Name}")]
+        [MethodDescription("Converts Word to PDF")]
+        public static bool ConvertExcelToPDF(string inputFilePath, string outputPDFFilePath)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(inputFilePath) || string.IsNullOrEmpty(outputPDFFilePath))
+                {
+                    if (_log.IsDebugEnabled)
+                    {
+                        _log.Debug("Direct.PDFExtended.Library - Convert Excel To PDF: missing arguments");
+                    }
+                    return false;
+                }
+
+                if (!System.Web.MimeMapping.GetMimeMapping(inputFilePath).Equals("application/vnd.ms-excel") &&
+                    !System.Web.MimeMapping.GetMimeMapping(inputFilePath).Equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                {
+                    if (_log.IsDebugEnabled)
+                    {
+                        _log.Debug("Direct.PDFExtended.Library - Convert Excel To PDF: provided excel file is not of valid extension");
+                    }
+                    return false;
+                }
+
+                object missingValue = System.Reflection.Missing.Value;
+
+                Excel.Application excelApp = new Excel.Application
+                {
+                    Visible = false,
+                    DisplayAlerts = false
+
+                };
+                Excel.Workbook workbook = excelApp.Workbooks.Open(inputFilePath);
+                workbook.Activate();
+
+                workbook.ExportAsFixedFormat(Excel.XlFixedFormatType.xlTypePDF, outputPDFFilePath, missingValue, missingValue, missingValue, missingValue, missingValue, missingValue, missingValue);
+
+                workbook.Close();
+                excelApp.Quit();
+
+                releaseComObject(workbook);
+                releaseComObject(excelApp);
+
+                return true;
+
+            }
+            catch (Exception e)
+            {
+                _log.Error("Direct.PDFExtended.Library - Convert Word To PDF: unexpected exception occured: ", e);
+                return false;
+            }
+
+        }
+
 
         private static bool ValidateImageInput(
              string imageFilePath,
@@ -819,6 +985,21 @@ namespace Direct.PDFExtended.Library
                 reader.Close();
             }
             return os.ToArray();
+        }
+        private static void releaseComObject(object obj)
+        {
+            try
+            {
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(obj);
+                obj = null;
+            }
+            catch (Exception ex)
+            {
+            }
+            finally
+            {
+                GC.Collect();
+            }
         }
     }
 }
