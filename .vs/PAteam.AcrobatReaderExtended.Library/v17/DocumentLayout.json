@@ -1,0 +1,129 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Mateusz\\source\\repos\\NICE-AcrobatReaderExtended\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{F4649825-6131-4735-AB71-C7642DEAA2F6}|PAteam.AcrobatReaderExtended.Library\\PAteam.AcrobatReaderExtended.Library.csproj|c:\\users\\mateusz\\source\\repos\\nice-acrobatreaderextended\\pateam.acrobatreaderextended.library\\class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F4649825-6131-4735-AB71-C7642DEAA2F6}|PAteam.AcrobatReaderExtended.Library\\PAteam.AcrobatReaderExtended.Library.csproj|solutionrelative:pateam.acrobatreaderextended.library\\class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F4649825-6131-4735-AB71-C7642DEAA2F6}|PAteam.AcrobatReaderExtended.Library\\PAteam.AcrobatReaderExtended.Library.csproj|c:\\users\\mateusz\\source\\repos\\nice-acrobatreaderextended\\pateam.acrobatreaderextended.library\\pdffield.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F4649825-6131-4735-AB71-C7642DEAA2F6}|PAteam.AcrobatReaderExtended.Library\\PAteam.AcrobatReaderExtended.Library.csproj|solutionrelative:pateam.acrobatreaderextended.library\\pdffield.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F4649825-6131-4735-AB71-C7642DEAA2F6}|PAteam.AcrobatReaderExtended.Library\\PAteam.AcrobatReaderExtended.Library.csproj|C:\\Users\\Mateusz\\source\\repos\\NICE-AcrobatReaderExtended\\pateam.acrobatreaderextended.library\\fieldproperties.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F4649825-6131-4735-AB71-C7642DEAA2F6}|PAteam.AcrobatReaderExtended.Library\\PAteam.AcrobatReaderExtended.Library.csproj|solutionrelative:pateam.acrobatreaderextended.library\\fieldproperties.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F4649825-6131-4735-AB71-C7642DEAA2F6}|PAteam.AcrobatReaderExtended.Library\\PAteam.AcrobatReaderExtended.Library.csproj|C:\\Users\\Mateusz\\source\\repos\\NICE-AcrobatReaderExtended\\pateam.acrobatreaderextended.library\\fieldposition.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F4649825-6131-4735-AB71-C7642DEAA2F6}|PAteam.AcrobatReaderExtended.Library\\PAteam.AcrobatReaderExtended.Library.csproj|solutionrelative:pateam.acrobatreaderextended.library\\fieldposition.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F4649825-6131-4735-AB71-C7642DEAA2F6}|PAteam.AcrobatReaderExtended.Library\\PAteam.AcrobatReaderExtended.Library.csproj|C:\\Users\\Mateusz\\source\\repos\\NICE-AcrobatReaderExtended\\pateam.acrobatreaderextended.library\\fieldsize.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F4649825-6131-4735-AB71-C7642DEAA2F6}|PAteam.AcrobatReaderExtended.Library\\PAteam.AcrobatReaderExtended.Library.csproj|solutionrelative:pateam.acrobatreaderextended.library\\fieldsize.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F4649825-6131-4735-AB71-C7642DEAA2F6}|PAteam.AcrobatReaderExtended.Library\\PAteam.AcrobatReaderExtended.Library.csproj|C:\\Users\\Mateusz\\source\\repos\\NICE-AcrobatReaderExtended\\pateam.acrobatreaderextended.library\\properties\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F4649825-6131-4735-AB71-C7642DEAA2F6}|PAteam.AcrobatReaderExtended.Library\\PAteam.AcrobatReaderExtended.Library.csproj|solutionrelative:pateam.acrobatreaderextended.library\\properties\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:11:0:{2456bd12-ecf7-4988-a4a6-67d49173f565}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "PDFField.cs",
+              "DocumentMoniker": "C:\\Users\\Mateusz\\source\\repos\\NICE-AcrobatReaderExtended\\PAteam.AcrobatReaderExtended.Library\\PDFField.cs",
+              "RelativeDocumentMoniker": "PAteam.AcrobatReaderExtended.Library\\PDFField.cs",
+              "ToolTip": "C:\\Users\\Mateusz\\source\\repos\\NICE-AcrobatReaderExtended\\PAteam.AcrobatReaderExtended.Library\\PDFField.cs",
+              "RelativeToolTip": "PAteam.AcrobatReaderExtended.Library\\PDFField.cs",
+              "ViewState": "AgIAABwAAAAAAAAAAAAgwDgAAAAfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-25T11:45:04.748Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Class1.cs",
+              "DocumentMoniker": "C:\\Users\\Mateusz\\source\\repos\\NICE-AcrobatReaderExtended\\PAteam.AcrobatReaderExtended.Library\\Class1.cs",
+              "RelativeDocumentMoniker": "PAteam.AcrobatReaderExtended.Library\\Class1.cs",
+              "ToolTip": "C:\\Users\\Mateusz\\source\\repos\\NICE-AcrobatReaderExtended\\PAteam.AcrobatReaderExtended.Library\\Class1.cs",
+              "RelativeToolTip": "PAteam.AcrobatReaderExtended.Library\\Class1.cs",
+              "ViewState": "AgIAAJUDAAAAAAAAAAAmwO4DAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2023-04-07T10:28:55.026Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "FieldSize.cs",
+              "DocumentMoniker": "C:\\Users\\Mateusz\\source\\repos\\NICE-AcrobatReaderExtended\\PAteam.AcrobatReaderExtended.Library\\FieldSize.cs",
+              "RelativeDocumentMoniker": "PAteam.AcrobatReaderExtended.Library\\FieldSize.cs",
+              "ToolTip": "C:\\Users\\Mateusz\\source\\repos\\NICE-AcrobatReaderExtended\\PAteam.AcrobatReaderExtended.Library\\FieldSize.cs",
+              "RelativeToolTip": "PAteam.AcrobatReaderExtended.Library\\FieldSize.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAYAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2023-04-12T08:54:20.867Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "FieldPosition.cs",
+              "DocumentMoniker": "C:\\Users\\Mateusz\\source\\repos\\NICE-AcrobatReaderExtended\\PAteam.AcrobatReaderExtended.Library\\FieldPosition.cs",
+              "RelativeDocumentMoniker": "PAteam.AcrobatReaderExtended.Library\\FieldPosition.cs",
+              "ToolTip": "C:\\Users\\Mateusz\\source\\repos\\NICE-AcrobatReaderExtended\\PAteam.AcrobatReaderExtended.Library\\FieldPosition.cs",
+              "RelativeToolTip": "PAteam.AcrobatReaderExtended.Library\\FieldPosition.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2023-04-12T08:53:56.985Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "FieldProperties.cs",
+              "DocumentMoniker": "C:\\Users\\Mateusz\\source\\repos\\NICE-AcrobatReaderExtended\\PAteam.AcrobatReaderExtended.Library\\FieldProperties.cs",
+              "RelativeDocumentMoniker": "PAteam.AcrobatReaderExtended.Library\\FieldProperties.cs",
+              "ToolTip": "C:\\Users\\Mateusz\\source\\repos\\NICE-AcrobatReaderExtended\\PAteam.AcrobatReaderExtended.Library\\FieldProperties.cs",
+              "RelativeToolTip": "PAteam.AcrobatReaderExtended.Library\\FieldProperties.cs",
+              "ViewState": "AgIAABwAAAAAAAAAAAAgwE4AAAAvAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2023-04-12T08:52:41.078Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "AssemblyInfo.cs",
+              "DocumentMoniker": "C:\\Users\\Mateusz\\source\\repos\\NICE-AcrobatReaderExtended\\PAteam.AcrobatReaderExtended.Library\\Properties\\AssemblyInfo.cs",
+              "RelativeDocumentMoniker": "PAteam.AcrobatReaderExtended.Library\\Properties\\AssemblyInfo.cs",
+              "ToolTip": "C:\\Users\\Mateusz\\source\\repos\\NICE-AcrobatReaderExtended\\PAteam.AcrobatReaderExtended.Library\\Properties\\AssemblyInfo.cs",
+              "RelativeToolTip": "PAteam.AcrobatReaderExtended.Library\\Properties\\AssemblyInfo.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2023-04-07T10:28:54.975Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

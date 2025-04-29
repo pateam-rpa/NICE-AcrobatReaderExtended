@@ -10,6 +10,7 @@ using log4net;
 using Word = Microsoft.Office.Interop.Word;
 using Excel = Microsoft.Office.Interop.Excel;
 using System.Drawing;
+using System.Reflection;
 
 namespace Direct.PDFExtended.Library
 {
@@ -915,6 +916,95 @@ namespace Direct.PDFExtended.Library
                 return false;
             }
 
+        }
+
+        [DirectDom("Get Text Width")]
+        [DirectDomMethod("Get width of text {Text} in field {Field Name} from PDF {PDF File Path}")]
+        [MethodDescription("Calculates the width (in PDF points) of the given text when rendered inside the specified form field in the PDF.")]
+        public static double GetTextWidth(string text, string fieldName, string pdfFilePath)
+        {
+            // Automatically pick up the method name
+            string func = MethodBase.GetCurrentMethod().Name;
+            _log.Debug($"Direct.PDFExtended.Library - {func}: Entering; text='{text}', field='{fieldName}', file='{pdfFilePath}'");
+
+            // 1) Param validation
+            if (string.IsNullOrWhiteSpace(pdfFilePath))
+            {
+                _log.Debug($"Direct.PDFExtended.Library - {func}: PDF path is empty");
+                throw new ArgumentNullException(nameof(pdfFilePath), "PDF file path cannot be null or empty.");
+            }
+            if (string.IsNullOrWhiteSpace(fieldName))
+            {
+                _log.Debug($"Direct.PDFExtended.Library - {func}: Field name is empty");
+                throw new ArgumentNullException(nameof(fieldName), "Field name cannot be null or empty.");
+            }
+            if (!File.Exists(pdfFilePath))
+            {
+                _log.Debug($"Direct.PDFExtended.Library - {func}: File not found at '{pdfFilePath}'");
+                throw new FileNotFoundException($"PDF not found: {pdfFilePath}", pdfFilePath);
+            }
+
+            text = text ?? string.Empty;
+            PdfReader reader = null;
+
+            try
+            {
+                // 2) Open PDF (no IDisposable on PdfReader in v4.1.2.0)
+                reader = new PdfReader(pdfFilePath);
+                var fields = reader.AcroFields;
+
+                // 3) Lookup the field item
+                var item = fields.GetFieldItem(fieldName);
+                if (item == null)
+                {
+                    string msg = $"Field '{fieldName}' not found in '{pdfFilePath}'.";
+                    _log.Error($"Direct.PDFExtended.Library - {func}: {msg}");
+                    throw new InvalidOperationException(msg);
+                }
+
+                // 4) Pull the merged dictionary out of the public ArrayList
+                ArrayList mergedList = item.merged;
+                if (mergedList == null || mergedList.Count == 0)
+                {
+                    string msg = $"Could not find merged dictionary for field '{fieldName}'.";
+                    _log.Error($"Direct.PDFExtended.Library - {func}: {msg}");
+                    throw new InvalidOperationException(msg);
+                }
+                var mergedDict = mergedList[0] as PdfDictionary;
+                if (mergedDict == null)
+                {
+                    string msg = $"Merged entry was not a PdfDictionary for '{fieldName}'.";
+                    _log.Error($"Direct.PDFExtended.Library - {func}: {msg}");
+                    throw new InvalidOperationException(msg);
+                }
+
+                // 5) Decode into a TextField to get .Font and .FontSize
+                var tf = new TextField(null, null, null);
+                fields.DecodeGenericDictionary(mergedDict, tf);
+
+                // 6) Fallback defaults
+                BaseFont bf = tf.Font
+                             ?? BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+                float fontSize = tf.FontSize > 0 ? tf.FontSize : 12f;
+                _log.Debug($"Direct.PDFExtended.Library - {func}: using font '{bf.PostscriptFontName}' @ {fontSize}pt");
+
+                // 7) Measure
+                float widthPt = bf.GetWidthPoint(text, fontSize);
+                _log.Debug($"Direct.PDFExtended.Library - {func}: measured width = {widthPt}pt");
+
+                return (double)widthPt;
+            }
+            catch (Exception ex) when (!(ex is ArgumentException || ex is FileNotFoundException || ex is InvalidOperationException))
+            {
+                _log.Error($"Direct.PDFExtended.Library - {func}: unexpected exception occured: ", ex);
+                // rethrow as-is so callers see the underlying exception
+                throw;
+            }
+            finally
+            {
+                // 8) Clean up
+                reader?.Close();
+            }
         }
 
 
